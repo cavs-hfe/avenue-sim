@@ -23,10 +23,7 @@ public class KinectServer : MonoBehaviour {
 	public string ipAddress = "192.168.1.2";
 
 	public Camera oculusCamera;
-	private Vector3 oculusToKinectVector;
-	private Vector3 oculusToHeadVector;
 	private bool updatedRotation = false;
-	private bool updateOculusHeadVector = false;
 
 	private AudioSource audioSource;
 	public AudioClip startSound;
@@ -53,13 +50,9 @@ public class KinectServer : MonoBehaviour {
 		handLeftPos = leftHand.transform.position;
 		handRightPos = rightHand.transform.position;
 		
-		oculusToKinectVector = gameObject.transform.forward;
-		oculusToHeadVector = Vector3.zero;
-		
 		audioSource = this.gameObject.AddComponent<AudioSource>();
 		audioSource.spatialBlend = 0.0f; // Use 2D sound for sound effects
 		audioSource.Play();
-
 
 		//setup socket
 		IPAddress address = IPAddress.Parse (ipAddress);
@@ -120,9 +113,8 @@ public class KinectServer : MonoBehaviour {
 	
 	void FixedUpdate () {
 
-		//gameObject.transform.localPosition = headPosition;
 		placeholder.transform.localPosition = headPosition;
-		cameraRig.transform.position = placeholder.transform.position - oculusToHeadVector;
+		cameraRig.transform.position = placeholder.transform.position;
 
 		leftHand.transform.localPosition = handLeftPos;
 		rightHand.transform.localPosition = handRightPos;
@@ -133,31 +125,12 @@ public class KinectServer : MonoBehaviour {
 		leftFoot.transform.localPosition = footLeftPos;
 		rightFoot.transform.localPosition = footRightPos;
 
-		//Debug.Log("set head position: " + headPosition.ToString());
-		
 		if (Input.GetKeyDown (KeyCode.JoystickButton0)) {
 			audioSource.PlayOneShot(startSound);
-			CalibrateHeadset();
+			UnityEngine.VR.InputTracking.Recenter();
 		}
+	}
 
-		if (updateOculusHeadVector) {
-			oculusToHeadVector =  oculusCamera.transform.position - placeholder.transform.position;
-			Debug.Log ("OculusHeadVector @" + Time.time + ": " + oculusToHeadVector.ToString ());
-			updateOculusHeadVector = false;
-		}
-		
-		if (updatedRotation) {
-			gameObject.transform.rotation = Quaternion.LookRotation(oculusToKinectVector);
-			updatedRotation = false;
-			updateOculusHeadVector = true;
-		}
-	}
-	
-	void CalibrateHeadset() {
-		oculusToKinectVector = Vector3.ProjectOnPlane(-oculusCamera.transform.forward, Vector3.up);
-		updatedRotation = true;
-		Debug.Log ("OculusKinectVector @" + Time.time + ": " + oculusToKinectVector.ToString ());
-	}
 
 }
 
