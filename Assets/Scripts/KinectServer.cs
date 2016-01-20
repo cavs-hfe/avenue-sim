@@ -35,6 +35,8 @@ public class KinectServer : MonoBehaviour
 	public string ipAddress = "192.168.1.2";
 	public string mocapIpAddress = "192.168.1.4";
 
+    public float headCenterOffset;
+
 	public GameObject cameraRig;
 	public Camera oculusCamera;
 
@@ -94,7 +96,7 @@ public class KinectServer : MonoBehaviour
 			System.Diagnostics.ProcessStartInfo startInfo = new System.Diagnostics.ProcessStartInfo();
 			startInfo.Arguments = mocapIpAddress;
 			startInfo.WindowStyle = System.Diagnostics.ProcessWindowStyle.Minimized;
-			startInfo.FileName = "C:\\rsween\\dev\\motionStream\\Release\\EVaRTSDKExample.exe";
+			startInfo.FileName = "C:\\rsween\\dev\\ped-sim-mocap\\Release\\EVaRTSDKExample.exe";
 
 			mocapProcess = System.Diagnostics.Process.Start(startInfo);
 		}
@@ -138,6 +140,7 @@ public class KinectServer : MonoBehaviour
 					if(!parts[1].Equals("1e+007")) { //1e+007
 						headPosition = new Vector3 (-float.Parse (parts [1]), float.Parse (parts [2]), float.Parse (parts [3]));
 						headPosition = headPosition / 1000;
+                        headPosition.y = headPosition.y - headCenterOffset;
 						headPosition = headPosition + new Vector3 (0, mocapHeightAdjust, 0);
 					}
 				}

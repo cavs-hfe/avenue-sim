@@ -1,45 +1,59 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public class DayNightScript : MonoBehaviour {
+public class DayNightScript : MonoBehaviour
+{
 
-	public Light sun;
-	public float secondsInFullDay = 120f;
-	[Range(0,1)]
-	public float currentTimeOfDay = 0;
-	public float timeMultiplier = 1f;
+    public Light sun;
+    public float secondsInFullDay = 120f;
+    [Range(0, 1)]
+    public float currentTimeOfDay = 0;
+    public float timeMultiplier = 1f;
+    public bool timeEnabled = true;
 
-	float sunInitialIntensity;
+    float sunInitialIntensity;
 
-	// Use this for initialization
-	void Start () {
-		sunInitialIntensity = sun.intensity;
-	}
-	
-	// Update is called once per frame
-	void Update () {
-		UpdateSun ();
+    // Use this for initialization
+    void Start()
+    {
+        sunInitialIntensity = sun.intensity;
+    }
 
-		currentTimeOfDay += (Time.deltaTime / secondsInFullDay) * timeMultiplier;
+    // Update is called once per frame
+    void Update()
+    {
+        UpdateSun();
 
-		if(currentTimeOfDay >= 1) {
-			currentTimeOfDay = 0;
-		}
-	}
+        if (timeEnabled)
+        {
+            currentTimeOfDay += (Time.deltaTime / secondsInFullDay) * timeMultiplier;
 
-	void UpdateSun() {
-		sun.transform.localRotation = Quaternion.Euler ((currentTimeOfDay * 360f) - 90, 170, 0);
+            if (currentTimeOfDay >= 1)
+            {
+                currentTimeOfDay = 0;
+            }
+        }
+    }
 
-		float intensityMultiplier = 1;
-		if (currentTimeOfDay <= 0.23f || currentTimeOfDay >= 0.75f) {
-			intensityMultiplier = 0;
-		} else if (currentTimeOfDay <= 0.25f) {
-			intensityMultiplier = Mathf.Clamp01 ((currentTimeOfDay - 0.23f) * (1 / 0.02f));
-		} else if (currentTimeOfDay >= 0.73f) {
-			intensityMultiplier = Mathf.Clamp01 (1-((currentTimeOfDay - 0.73f) * (1/0.02f)));
-		}
+    void UpdateSun()
+    {
+        sun.transform.localRotation = Quaternion.Euler((currentTimeOfDay * 360f) - 90, 170, 0);
 
-		sun.intensity = sunInitialIntensity * intensityMultiplier;
+        float intensityMultiplier = 1;
+        if (currentTimeOfDay <= 0.23f || currentTimeOfDay >= 0.75f)
+        {
+            intensityMultiplier = 0;
+        }
+        else if (currentTimeOfDay <= 0.25f)
+        {
+            intensityMultiplier = Mathf.Clamp01((currentTimeOfDay - 0.23f) * (1 / 0.02f));
+        }
+        else if (currentTimeOfDay >= 0.73f)
+        {
+            intensityMultiplier = Mathf.Clamp01(1 - ((currentTimeOfDay - 0.73f) * (1 / 0.02f)));
+        }
 
-	}
+        sun.intensity = sunInitialIntensity * intensityMultiplier;
+
+    }
 }

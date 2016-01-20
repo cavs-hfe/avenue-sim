@@ -4,7 +4,7 @@
 // Uncomment to use in a VR project using the Oculus VR plugin
 // This will avoid issues in which the captured panorama is pitched/rolled
 // when the player pitches/rolls their headset.
-#define OVR_SUPPORT
+//#define OVR_SUPPORT
 
 using CapturePanorama.Internals;
 using System;
@@ -424,8 +424,6 @@ namespace CapturePanorama
 
         public void StartCaptureEveryFrame()
         {
-			Debug.Log ("Recording started: " + DateTime.Now);
-			Debug.Log ("Recording started: " + Time.time);
             Time.captureFramerate = frameRate;
             videoBaseName = String.Format("{0}_{1:yyyy-MM-dd_HH-mm-ss-fff}", panoramaName, DateTime.Now);
             frameNumber = 0;
@@ -435,9 +433,7 @@ namespace CapturePanorama
 
         public void StopCaptureEveryFrame()
         {
-			Debug.Log ("Recording stopped: " + DateTime.Now);
-			Debug.Log ("Recording stopped: " + Time.time);
-			Time.captureFramerate = 0;
+            Time.captureFramerate = 0;
             capturingEveryFrame = false;
         }
 
@@ -624,10 +620,10 @@ namespace CapturePanorama
 
             Quaternion headOrientation = Quaternion.identity;
 #if OVR_SUPPORT
-            /*if (OVRManager.display != null)
+            if (OVRManager.display != null)
             {
                 headOrientation = OVRManager.display.GetHeadPose(0.0).orientation;
-            }*/
+            }
 #endif
 #if UNITY_5_1
             if (VRSettings.enabled && VRSettings.loadedDevice != VRDeviceType.None)
