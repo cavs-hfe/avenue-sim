@@ -107,6 +107,11 @@ namespace CAVS.Recording {
 			frames.Add(frame);
 
 		}
+
+
+		public float getDuration(){
+			return this.frames[this.frames.Count-1].TimeStamp - this.frames [0].TimeStamp;
+		}
 			
 
 		public string Name {
@@ -136,12 +141,12 @@ namespace CAVS.Recording {
 			}
 		}
 
-		public List<Frame> Frames {
+		public Frame[] Frames {
 			get {
-				return frames;
+				return frames.ToArray();
 			}
 			set {
-				frames = value;
+				frames = new List<Frame> (value);
 			}
 		}
 	}

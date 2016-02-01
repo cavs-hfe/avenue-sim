@@ -20,7 +20,7 @@ namespace CAVS.Recording {
 		/// The name of the file that we'll save all recorded movement frames to.
 		/// </summary>
 		[SerializeField]
-		private string fileName = "MovementRecord";
+		private string fileName;
 
 
 		/// <summary>
@@ -218,9 +218,9 @@ namespace CAVS.Recording {
 				// Make sure they still exist in the scene before recording them
 				if (actorsInScene [i] != null && actorsInScene [i].gameObject != null) {
 
-					postions [i] = transform.position;
-					rotations [i] = transform.rotation.eulerAngles;
-					ids [i] = gameObject.GetInstanceID ();
+					postions [i] = actorsInScene [i].gameObject.transform.position;
+					rotations [i] = actorsInScene [i].gameObject.transform.rotation.eulerAngles;
+					ids [i] = actorsInScene [i].gameObject.GetInstanceID ();
 
 				} else {
 				

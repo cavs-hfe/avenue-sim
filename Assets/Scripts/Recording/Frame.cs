@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using System.Collections.Generic;
 
 namespace CAVS.Recording {
 
@@ -12,10 +13,10 @@ namespace CAVS.Recording {
 		int[] actorIds;
 
 
-		Vector3[] positions;
+		Dictionary<int, Vector3> positions;
 
 
-		Vector3[] rotations;
+		Dictionary<int, Vector3> rotations;
 
 
 		float timeStamp;
@@ -24,10 +25,30 @@ namespace CAVS.Recording {
 		public Frame(int[] actorIds, Vector3[] positions, Vector3[] rotations, float timeStamp){
 
 			this.actorIds = actorIds;
-			this.positions = positions;
-			this.rotations = rotations;
+
+			this.positions = new Dictionary<int, Vector3> ();
+			this.rotations = new Dictionary<int, Vector3> ();
+
+			for (int i = 0; i < actorIds.Length; i++) {
+				this.positions[actorIds[i]] = positions[i];
+			}
+
+			for (int i = 0; i < actorIds.Length; i++) {
+				this.rotations[actorIds[i]] = rotations[i];
+			}
+
 			this.timeStamp = timeStamp;
 
+		}
+
+
+		public Vector3 getPositionOfActor(int actor){
+			return positions [actor];
+		}
+
+
+		public Vector3 getRotationOfActor(int actor){
+			return rotations [actor];
 		}
 
 
@@ -43,20 +64,53 @@ namespace CAVS.Recording {
 
 		public Vector3[] Positions {
 			get {
-				return positions;
+				
+				Vector3[] pos = new Vector3[this.actorIds.Length];
+
+				for (int i = 0; i < actorIds.Length; i++) {
+					pos [i] = this.positions [actorIds [i]];
+				}
+
+				return pos;
+
 			}
 			set {
-				positions = value;
+				
+				this.positions = new Dictionary<int, Vector3> ();
+
+				for (int i = 0; i < this.actorIds.Length; i++) {
+					this.positions [actorIds [i]] = value [i];
+				}
+
 			}
 		}
 
 
+		/// <summary>
+		/// Gets or sets all the rotations of the actors
+		/// For serialization purposes only
+		/// </summary>
+		/// <value>The rotations.</value>
 		public Vector3[] Rotations {
 			get {
-				return rotations;
+				
+				Vector3[] rots = new Vector3[this.actorIds.Length];
+
+				for (int i = 0; i < actorIds.Length; i++) {
+					rots [i] = this.rotations [actorIds [i]];
+				}
+
+				return rots;
+
 			}
 			set {
-				rotations = value;
+
+				this.rotations = new Dictionary<int, Vector3> ();
+
+				for (int i = 0; i < this.actorIds.Length; i++) {
+					this.rotations [actorIds [i]] = value [i];
+				}
+
 			}
 		}
 
