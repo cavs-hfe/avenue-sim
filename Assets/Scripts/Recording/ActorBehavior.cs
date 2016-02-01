@@ -47,6 +47,14 @@ namespace CAVS.Recording {
 			return objToRepresentActorInPlayback;
 		}
 
+
+		/// <summary>
+		/// Sets the primitive object type to represent the actor during playback
+		/// </summary>
+		public void setObjToRepresentActor(PrimitiveType obj){
+			this.objToRepresentActorInPlayback = obj;
+		}
+
 	}
 
 }

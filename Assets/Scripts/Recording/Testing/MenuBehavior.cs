@@ -53,6 +53,7 @@ namespace CAVS.Recording.Testing {
 				actor = GameObject.CreatePrimitive (PrimitiveType.Sphere);
 				actor.AddComponent<SimpleBehavior> ();
 				actor.AddComponent<ActorBehavior> ();
+				actor.GetComponent<ActorBehavior> ().setObjToRepresentActor (PrimitiveType.Cube);
 				actor.transform.position = new Vector3 (0,3,0);
 				recordingService.startRecording (fileNameForRecording.text);
 				buttonRecorderText.text = "Stop";
@@ -106,7 +107,7 @@ namespace CAVS.Recording.Testing {
 
 		public void loadFile(string buttonPressed){
 			
-			if (playbackService.loadRecording (buttonPressed)) {
+			if (playbackService.loadRecording (buttonPressed) != null) {
 				playbackControlsPanel.SetActive (true);
 			}
 

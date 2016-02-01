@@ -98,21 +98,35 @@ namespace CAVS.Recording {
 
 		}
 
+
 		/// <summary>
 		/// Adds a frame to the recording at hand
 		/// </summary>
 		/// <param name="frame">Frame.</param>
 		public void addFrame(Frame frame){
-
 			frames.Add(frame);
-
 		}
 
 
+		/// <summary>
+		/// Gets the duration of the recording by comparing the timestamps of the first
+		/// and last frame
+		/// 
+		/// THIS WILL NEED TO CHANGE IF WE ALLOW PAUSING IN THE RECORDING
+		/// </summary>
+		/// <returns>The duration.</returns>
 		public float getDuration(){
 			return this.frames[this.frames.Count-1].TimeStamp - this.frames [0].TimeStamp;
 		}
-			
+
+
+		public PrimitiveType getActorPreferedRepresentation(int actorId){
+			return actorRepresentations [actorId];
+		}
+
+		public string getActorName(int actorId){
+			return actorNames [actorId];
+		}
 
 		public string Name {
 			get {
@@ -147,6 +161,62 @@ namespace CAVS.Recording {
 			}
 			set {
 				frames = new List<Frame> (value);
+			}
+		}
+
+		/// <summary>
+		/// Gets or sets the actor representations.
+		/// For Seralization purposes
+		/// </summary>
+		/// <value>The actor representations.</value>
+		public PrimitiveType[] ActorRepresentations {
+			get {
+
+				PrimitiveType[] types = new PrimitiveType[this.actorIds.Length];
+
+				for (int i = 0; i < types.Length; i++) {
+					types [i] = actorRepresentations [this.actorIds [i]];
+				}
+
+				return types;
+			}
+			set {
+
+				this.actorRepresentations = new Dictionary<int, PrimitiveType> ();
+
+				for (int i = 0; i < actorIds.Length; i++) {
+					actorRepresentations [this.actorIds [i]] = value [i];
+				}
+
+			}
+		}
+
+
+		/// <summary>
+		/// Gets or sets the actor names.
+		/// For serialization purposes
+		/// </summary>
+		/// <value>The actor names.</value>
+		public string[] ActorNames {
+			get {
+				
+				string[] names = new string[this.actorIds.Length];
+
+				for (int i = 0; i < names.Length; i++) {
+					names [i] = actorNames [this.actorIds [i]];
+				}
+
+				return names;
+
+			}
+			set {
+
+				this.actorNames = new Dictionary<int, string> ();
+
+				for (int i = 0;  i < actorIds.Length; i++) {
+					this.actorNames  [this.actorIds [i]] = value [i];
+				}
+
 			}
 		}
 	}
