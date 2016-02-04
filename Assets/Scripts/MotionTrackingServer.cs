@@ -55,6 +55,9 @@ public class MotionTrackingServer : MonoBehaviour
 
     public bool usingMocap = true;
 
+    public float mocapBoundsX = 5.0f;
+    public float mocapBoundsZ = 5.0f;
+
     private float mocapHeightAdjust = -1.3f;
 
     private System.Diagnostics.Process mocapProcess = null;
@@ -137,14 +140,17 @@ public class MotionTrackingServer : MonoBehaviour
             {
                 while ((message = reader.ReadLine()) != null)
                 {
-                    //Debug.Log ("Received message from client: " + message);
+                    Debug.Log("Received message from client: " + message);
                     string[] parts = message.Split(new char[] { ',' });
                     if (!parts[1].Equals("1e+007"))
                     { //1e+007
-                        headPosition = new Vector3(-float.Parse(parts[1]), float.Parse(parts[2]), float.Parse(parts[3]));
-                        headPosition = headPosition / 1000;
-                        headPosition.y = headPosition.y - headCenterOffset;
-                        headPosition = headPosition + new Vector3(0, mocapHeightAdjust, 0);
+                        if (Math.Abs(float.Parse(parts[1])) < mocapBoundsX * 1000 && Math.Abs(float.Parse(parts[3])) < mocapBoundsZ * 1000)
+                        {
+                            headPosition = new Vector3(-float.Parse(parts[1]), float.Parse(parts[2]), float.Parse(parts[3]));
+                            headPosition = headPosition / 1000;
+                            headPosition.y = headPosition.y - headCenterOffset;
+                            headPosition = headPosition + new Vector3(0, mocapHeightAdjust, 0);
+                        }
                     }
                 }
             }
