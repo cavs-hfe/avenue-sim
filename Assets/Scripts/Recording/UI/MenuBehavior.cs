@@ -1,8 +1,9 @@
 ﻿using UnityEngine;
 using System.Collections;
 using UnityEngine.UI;
+using System.Text.RegularExpressions;
 
-namespace CAVS.Recording.Testing {
+namespace CAVS.Recording.UI {
 
 	public class MenuBehavior : MonoBehaviour {
 
@@ -33,6 +34,12 @@ namespace CAVS.Recording.Testing {
 		[SerializeField]
 		private GameObject playbackControlsPanel;
 
+		[SerializeField]
+		private Toggle shouldAutoIncrementTrialRecordings;
+
+		[SerializeField]
+		private GameObject errorPanel;
+
 		private GameObject actor;
 
 		public void toggleRecording(){
@@ -50,12 +57,64 @@ namespace CAVS.Recording.Testing {
 					return;
 				}
 
-				actor = GameObject.CreatePrimitive (PrimitiveType.Sphere);
-				actor.AddComponent<SimpleBehavior> ();
-				actor.AddComponent<ActorBehavior> ();
-				actor.GetComponent<ActorBehavior> ().setObjToRepresentActor (PrimitiveType.Cube);
-				actor.transform.position = new Vector3 (0,3,0);
-				recordingService.startRecording (fileNameForRecording.text);
+				string fileName = fileNameForRecording.text;
+
+				string pattern = @"\d+$";
+				string replacement = "";
+				Regex rgx = new Regex(pattern);
+
+				int numOfFilesWithSameName = 1;
+
+				// We need to figure out what number to put on the end of it
+				if (shouldAutoIncrementTrialRecordings.isOn) {
+
+					string[] allCurrentFileNames = playbackService.getAllRecordingsFileNames ();
+
+					for (int i = 0; i < allCurrentFileNames.Length; i++) {
+
+						// Remove .xml extensions
+						allCurrentFileNames [i] = allCurrentFileNames [i].Substring (0, allCurrentFileNames [i].Length - 4);
+
+						// Remove numbers at end of file
+						allCurrentFileNames [i] = rgx.Replace (allCurrentFileNames [i], replacement);
+
+						// If file names match
+						if (allCurrentFileNames [i].Equals (fileName)) {
+							numOfFilesWithSameName++;
+						}
+
+					}
+
+					fileName += numOfFilesWithSameName;
+
+				} 
+				// Check if any names already saved match a file already saved
+				else {
+
+					string[] allCurrentFileNames = playbackService.getAllRecordingsFileNames ();
+
+					for (int i = 0; i < allCurrentFileNames.Length; i++) {
+
+						// Remove .xml extensions
+						allCurrentFileNames [i] = allCurrentFileNames [i].Substring (0, allCurrentFileNames [i].Length - 4);
+
+						// If file names match
+						if (allCurrentFileNames [i].Equals (fileName)) {
+
+							// Show an error on the screen preventing an overwrite
+							GameObject errorInstance = Instantiate(errorPanel);
+							errorInstance.transform.SetParent(playbackPanel.transform.parent,false);
+							Destroy(errorInstance,3f);
+
+							return;
+
+						}
+
+					}
+
+				}
+
+				recordingService.startRecording (fileName);
 				buttonRecorderText.text = "Stop";
 
 			}
@@ -67,7 +126,8 @@ namespace CAVS.Recording.Testing {
 			recordPanel.SetActive (!recordPanel.activeSelf);
 			playbackPanel.SetActive (false);
 			playbackControlsPanel.SetActive (false);
-		
+			playbackService.clearCurrentLoadedRecording ();
+
 		}
 
 		public void toggleLoadPanel(){

@@ -73,10 +73,17 @@ namespace CAVS.Recording {
 
 
 		/// <summary>
-		/// Begins recording the scene
+		/// Begins recording the scene if you pass in a name
 		/// </summary>
 		public void startRecording(string nameOfRecording){
 
+			// Cleans data
+			if (nameOfRecording != null && nameOfRecording == "") {
+				Debug.Log ("You can't create a recording with no name!");
+				return;
+			}
+
+			// Change state to recording
 			currentState = RecordingState.Recording;
 
 			// Grab all actors in the scene
@@ -95,7 +102,7 @@ namespace CAVS.Recording {
 			}
 
 			// Grab actors prefered playback representation
-			PrimitiveType[] actorplaybackRep = new PrimitiveType[actorsInScene.Count];
+			string[] actorplaybackRep = new string[actorsInScene.Count];
 			for (int i = 0; i < actorsInScene.Count; i++) {
 				actorplaybackRep[i] = actorsInScene [i].getObjToRepresentActor ();
 			}
@@ -161,7 +168,6 @@ namespace CAVS.Recording {
 		// Update is called once per frame
 		void Update () {
 		
-
 			// Don't bother doing anything if we're not recording
 			if (currentState != RecordingState.Recording) {
 				return;
@@ -169,12 +175,16 @@ namespace CAVS.Recording {
 
 
 			// If it's time to capture another frame.
-			if(Time.time - timeOfLastFrameCapture > 1f / framesPerSecondForRecording ){
-
+			if(Time.time - timeOfLastFrameCapture > 1f / framesPerSecondForRecording){
 				captureFrame ();
-
 			}
 
+			if(Input.anyKey){
+				if(Input.inputString != ""){
+					//Debug.Log (Input.inputString +" : "+Time.time);
+					currentRecordingBeingBuilt.logInput (Input.inputString);
+				}
+			}
 
 		}
 

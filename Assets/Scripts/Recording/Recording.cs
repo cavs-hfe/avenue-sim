@@ -44,7 +44,13 @@ namespace CAVS.Recording {
 		/// Dictionary for getting an actors prefered representation by using
 		/// it's unique id for lookup
 		/// </summary>
-		private Dictionary<int, PrimitiveType> actorRepresentations;
+		private Dictionary<int, string> actorRepresentations;
+
+
+		/// <summary>
+		/// The logged input.
+		/// </summary>
+		private List<string> loggedInput;
 
 
 		/// <summary>
@@ -56,7 +62,7 @@ namespace CAVS.Recording {
 		/// <param name="actorIds">Actor unique gameobject identifiers.</param>
 		/// <param name="actorNames">Actor names.</param>
 		/// <param name="actorRepresentations">Actor representations.</param>
-		public Recording(string name, float frameRateRecordedAt, int[] actorIds, string[] actorNames, PrimitiveType[] actorRepresentations){
+		public Recording(string name, float frameRateRecordedAt, int[] actorIds, string[] actorNames, string[] actorRepresentations){
 
 			if (actorIds == null || actorIds.Length == 0) {
 				throw new System.ArgumentException ("You need atleast 1 actor to make a recording!", "actorIds");
@@ -81,13 +87,14 @@ namespace CAVS.Recording {
 			}
 
 			// Set up their representations! 
-			this.actorRepresentations = new Dictionary<int, PrimitiveType> ();
+			this.actorRepresentations = new Dictionary<int, string> ();
 			for (int i = 0; i < actorRepresentations.Length; i++) {
 				this.actorRepresentations [actorIds[i]] = actorRepresentations[i];
 			}
 
 			this.frames = new List<Frame> ();
 
+			this.loggedInput = new List<string> ();
 		}
 
 		/// <summary>
@@ -120,13 +127,24 @@ namespace CAVS.Recording {
 		}
 
 
-		public PrimitiveType getActorPreferedRepresentation(int actorId){
+		/// <summary>
+		/// Logs the input along with the time it was given
+		/// </summary>
+		/// <param name="input">Input.</param>
+		public void logInput(string input){
+			loggedInput.Add (input+"\n"+Time.time);
+		}
+
+
+		public string getActorPreferedRepresentation(int actorId){
 			return actorRepresentations [actorId];
 		}
+
 
 		public string getActorName(int actorId){
 			return actorNames [actorId];
 		}
+
 
 		public string Name {
 			get {
@@ -164,15 +182,16 @@ namespace CAVS.Recording {
 			}
 		}
 
+
 		/// <summary>
 		/// Gets or sets the actor representations.
 		/// For Seralization purposes
 		/// </summary>
 		/// <value>The actor representations.</value>
-		public PrimitiveType[] ActorRepresentations {
+		public string[] ActorRepresentations {
 			get {
 
-				PrimitiveType[] types = new PrimitiveType[this.actorIds.Length];
+				string[] types = new string[this.actorIds.Length];
 
 				for (int i = 0; i < types.Length; i++) {
 					types [i] = actorRepresentations [this.actorIds [i]];
@@ -182,7 +201,7 @@ namespace CAVS.Recording {
 			}
 			set {
 
-				this.actorRepresentations = new Dictionary<int, PrimitiveType> ();
+				this.actorRepresentations = new Dictionary<int, string> ();
 
 				for (int i = 0; i < actorIds.Length; i++) {
 					actorRepresentations [this.actorIds [i]] = value [i];
@@ -219,6 +238,17 @@ namespace CAVS.Recording {
 
 			}
 		}
+
+
+		public string[] LoggedInput {
+			get {
+				return loggedInput.ToArray();
+			}
+			set {
+				loggedInput = new List<string>(value);
+			}
+		}
+
 	}
 
 }

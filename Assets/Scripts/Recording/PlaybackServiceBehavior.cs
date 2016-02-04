@@ -112,15 +112,19 @@ namespace CAVS.Recording {
 			// Load in the new recording
 			XmlSerializer serializer = new XmlSerializer (typeof(Recording));
 
-			using (FileStream fileStream = new FileStream("Recordings/"+recordingname,FileMode.Open)) 
-			{
-				Recording result = (Recording) serializer.Deserialize(fileStream );
-				Debug.Log (result.getDuration());
-				currrentLoadedRecording = result;
-				return currrentLoadedRecording;
+			try{
+				using (FileStream fileStream = new FileStream("Recordings/"+recordingname,FileMode.Open)) 
+				{
+					Recording result = (Recording) serializer.Deserialize(fileStream);
+					Debug.Log (result.getDuration());
+					currrentLoadedRecording = result;
+					return currrentLoadedRecording;
+				}
+			}
+			catch{
+				return null;
 			}
 
-			return null;
 		}
 
 
@@ -155,7 +159,8 @@ namespace CAVS.Recording {
 				int id = currrentLoadedRecording.ActorIds [i];
 
 				// Create the actor
-				actors [id] = GameObject.CreatePrimitive(currrentLoadedRecording.getActorPreferedRepresentation(id));
+				GameObject actorRef = (GameObject)Resources.Load(currrentLoadedRecording.getActorPreferedRepresentation(id));
+				actors [id] = GameObject.Instantiate(actorRef);
 				actors [id].transform.name = currrentLoadedRecording.getActorName (id);
 				actors [id].transform.position = currrentLoadedRecording.Frames [0].getPositionOfActor(id);
 				actors [id].transform.rotation = Quaternion.Euler(currrentLoadedRecording.Frames [0].getRotationOfActor(id));
