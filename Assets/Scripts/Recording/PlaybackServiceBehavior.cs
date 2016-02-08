@@ -64,10 +64,21 @@ namespace CAVS.Recording {
 
 
 		/// <summary>
+		/// If true, the when doing playback, we'll attempt to begin controlling
+		/// objects that where used to create the recording in the first place, 
+		/// instead of instantiating objects to represent them.
+		/// 
+		/// If you don't want the objects behavior to fire, have them implement the
+		/// IPlaybackInterference Interface.
+		/// </summary>
+		private bool replayWithActorsAlreadySpawned;
+
+
+		/// <summary>
 		/// Gets all recordings file names found in our designated recordings folder
 		/// </summary>
 		/// <returns>All Files found in recordings folder.</returns>
-		public string[] getAllRecordingsFileNames(){
+		public static string[] getAllRecordingsFileNames(){
 
 			string[] recordings = Directory.GetFiles ("Recordings");
 
@@ -78,6 +89,17 @@ namespace CAVS.Recording {
 
 			return recordings;
 
+		}
+
+
+		public void setPlaybackWithOriginalActors(bool value){
+
+			if (currentPlaybackState == PlaybackState.Paused || currentPlaybackState == PlaybackState.Playing) {
+				Debug.LogWarning ("The playback has already begun!  Setting this value won't do anything to" +
+					"the current recording being played.  Try stopping (not pause) the playback and then assign this value!");
+			}
+
+			this.replayWithActorsAlreadySpawned = value;
 		}
 
 
@@ -153,6 +175,12 @@ namespace CAVS.Recording {
 			timeSpentPaused = 0f;
 			velocitys = new Vector3[currrentLoadedRecording.ActorIds.Length];
 
+			ActorBehavior[] actorsInScene = null;
+			if(replayWithActorsAlreadySpawned){
+				actorsInScene = GameObject.FindObjectsOfType<ActorBehavior> ();
+			}
+
+			// Create actors
 			for (int i = 0; i < currrentLoadedRecording.ActorIds.Length; i++) {
 
 				// Get the unique Id of the actor
@@ -160,7 +188,43 @@ namespace CAVS.Recording {
 
 				// Create the actor
 				GameObject actorRef = (GameObject)Resources.Load(currrentLoadedRecording.getActorPreferedRepresentation(id));
-				actors [id] = GameObject.Instantiate(actorRef);
+
+				GameObject actor = null;
+
+				if (actorsInScene != null) {
+					
+					for (int a = 0; a < actorsInScene.Length; a++) {
+
+						if(actorsInScene[a].getNameForRecording() == currrentLoadedRecording.getActorName (id)){
+
+							actor = actorsInScene [a].gameObject;
+
+							// Disable anything that might mess up playback
+							PlayerbackInterferenceBehavior[] interference = actor.GetComponents<PlayerbackInterferenceBehavior>();
+
+							for (int p = 0; p < interference.Length; p++) {
+
+								interference [i].enabled = false;
+
+							}
+
+						}
+					}
+
+				}
+
+				if(actor == null){
+
+					if (actorRef == null) {
+						Debug.LogError ("Unable to find the resource you wanted to use to represent the actor!");
+						actor = GameObject.CreatePrimitive (PrimitiveType.Cube);
+					} else {
+						actor = GameObject.Instantiate (actorRef);
+					}
+
+				}
+
+				actors [id] = actor;
 				actors [id].transform.name = currrentLoadedRecording.getActorName (id);
 				actors [id].transform.position = currrentLoadedRecording.Frames [0].getPositionOfActor(id);
 				actors [id].transform.rotation = Quaternion.Euler(currrentLoadedRecording.Frames [0].getRotationOfActor(id));

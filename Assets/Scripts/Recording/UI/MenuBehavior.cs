@@ -40,14 +40,11 @@ namespace CAVS.Recording.UI {
 		[SerializeField]
 		private GameObject errorPanel;
 
-		private GameObject actor;
-
 		public void toggleRecording(){
 			
 			if (recordingService.currentelyRecording ()) {
 				
 				recordingService.stopAndSaveRecording ();
-				Destroy (actor);
 				buttonRecorderText.text = "Start";
 
 			} else {
@@ -68,7 +65,7 @@ namespace CAVS.Recording.UI {
 				// We need to figure out what number to put on the end of it
 				if (shouldAutoIncrementTrialRecordings.isOn) {
 
-					string[] allCurrentFileNames = playbackService.getAllRecordingsFileNames ();
+					string[] allCurrentFileNames = PlaybackServiceBehavior.getAllRecordingsFileNames ();
 
 					for (int i = 0; i < allCurrentFileNames.Length; i++) {
 
@@ -91,7 +88,7 @@ namespace CAVS.Recording.UI {
 				// Check if any names already saved match a file already saved
 				else {
 
-					string[] allCurrentFileNames = playbackService.getAllRecordingsFileNames ();
+					string[] allCurrentFileNames = PlaybackServiceBehavior.getAllRecordingsFileNames ();
 
 					for (int i = 0; i < allCurrentFileNames.Length; i++) {
 
@@ -151,13 +148,14 @@ namespace CAVS.Recording.UI {
 
 
 				// Create a button for every file
-				for(int i = 0; i < playbackService.getAllRecordingsFileNames().Length; i ++){
+				for(int i = 0; i < PlaybackServiceBehavior.getAllRecordingsFileNames().Length; i ++){
 
 					GameObject file = (GameObject)Instantiate (playbackFileButtonPrefab);
-					string fileName = playbackService.getAllRecordingsFileNames () [i];
+					string fileName = PlaybackServiceBehavior.getAllRecordingsFileNames () [i];
 					file.transform.SetParent (playbackFileList.transform);
 					file.GetComponentInChildren<Text> ().text = fileName;
 					file.GetComponent<Button> ().onClick.AddListener (() => loadFile(fileName));
+
 				}
 
 			}
