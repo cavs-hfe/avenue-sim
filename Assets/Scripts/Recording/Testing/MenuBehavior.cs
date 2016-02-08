@@ -107,9 +107,9 @@ namespace CAVS.Recording.Testing {
 
 		public void loadFile(string buttonPressed){
 			
-			if (playbackService.loadRecording (buttonPressed) != null) {
+			//if (playbackService.loadRecording (buttonPressed) != null) {
 				playbackControlsPanel.SetActive (true);
-			}
+			//}
 
 		}
 

@@ -12,6 +12,12 @@ namespace CAVS.Recording {
 	/// </summary>
 	public class PlaybackServiceBehavior : MonoBehaviour {
 
+        void Start()
+        {
+            loadRecording("TestTwoObjects.xml");
+            playLoadedRecording();
+        }
+
 
 		enum PlaybackState {
 			Stopped,
@@ -104,7 +110,7 @@ namespace CAVS.Recording {
 		/// </summary>
 		/// <returns>The recording.</returns>
 		/// <param name="recordingname">Recordingname.</param>
-		public Recording loadRecording(string recordingname){
+		public void loadRecording(string recordingname){
 
 			// Clear out any recording that might be loaded
 			clearCurrentLoadedRecording();
@@ -117,10 +123,7 @@ namespace CAVS.Recording {
 				Recording result = (Recording) serializer.Deserialize(fileStream );
 				Debug.Log (result.getDuration());
 				currrentLoadedRecording = result;
-				return currrentLoadedRecording;
 			}
-
-			return null;
 		}
 
 
