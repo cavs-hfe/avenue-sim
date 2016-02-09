@@ -3,7 +3,7 @@ using System.Collections;
 
 namespace CAVS.Recording.Testing {
 
-	public class SimpleBehavior : CAVS.Recording.PlayerbackInterferenceBehavior {
+	public class SimpleBehavior : CAVS.Recording.PlaybackInterferenceBehavior {
 
 		// Update is called once per frame
 		void Update () {

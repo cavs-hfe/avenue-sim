@@ -8,7 +8,7 @@ namespace CAVS.Recording {
 	/// recording should extend from this class to the playback service knows what to
 	/// disable.
 	/// </summary>
-	public abstract class PlayerbackInterferenceBehavior: MonoBehaviour {
+	public abstract class PlaybackInterferenceBehavior: MonoBehaviour {
 
 		[SerializeField]
 		private bool disableOnPlayback = true;

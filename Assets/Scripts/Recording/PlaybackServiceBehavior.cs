@@ -236,7 +236,7 @@ namespace CAVS.Recording {
 							actor = actorsInScene [a].gameObject;
 
 							// Disable anything that might mess up playback
-							PlayerbackInterferenceBehavior[] interference = actor.GetComponents<PlayerbackInterferenceBehavior>();
+							PlaybackInterferenceBehavior[] interference = actor.GetComponents<PlaybackInterferenceBehavior>();
 
 							for (int p = 0; p < interference.Length; p++) {
 
@@ -375,7 +375,7 @@ namespace CAVS.Recording {
 
 					if(actorsAlreadyInSceneWhenStartPlaying.Contains(actor.Value)){
 
-						PlayerbackInterferenceBehavior[] componentstoReenable = actor.Value.GetComponents<PlayerbackInterferenceBehavior> ();
+						PlaybackInterferenceBehavior[] componentstoReenable = actor.Value.GetComponents<PlaybackInterferenceBehavior> ();
 
 						for (int i = 0; i < componentstoReenable.Length; i++) {
 							componentstoReenable [i].enabled = true;
