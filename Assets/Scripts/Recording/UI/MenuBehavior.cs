@@ -123,7 +123,7 @@ namespace CAVS.Recording.UI {
 			recordPanel.SetActive (!recordPanel.activeSelf);
 			playbackPanel.SetActive (false);
 			playbackControlsPanel.SetActive (false);
-			playbackService.clearCurrentLoadedRecording ();
+			playbackService.stopLoadedRecording ();
 
 		}
 
@@ -154,7 +154,7 @@ namespace CAVS.Recording.UI {
 					string fileName = PlaybackServiceBehavior.getAllRecordingsFileNames () [i];
 					file.transform.SetParent (playbackFileList.transform);
 					file.GetComponentInChildren<Text> ().text = fileName;
-					file.GetComponent<Button> ().onClick.AddListener (() => loadFile(fileName));
+					file.GetComponent<Button> ().onClick.AddListener (() => this.loadFile(fileName));
 
 				}
 
@@ -165,7 +165,7 @@ namespace CAVS.Recording.UI {
 
 		public void loadFile(string buttonPressed){
 			
-			if (playbackService.loadRecording (buttonPressed) != null) {
+			if (playbackService.setRecordingToPlayback (buttonPressed)) {
 				playbackControlsPanel.SetActive (true);
 			}
 
@@ -181,6 +181,9 @@ namespace CAVS.Recording.UI {
 			playbackService.pauseLoadedRecording ();
 		}
 
+		public void stopLoadedRecording(){
+			playbackService.stopLoadedRecording ();
+		}
 
 	}
 
