@@ -168,6 +168,9 @@ namespace CAVS.Recording {
 		// Update is called once per frame
 		void Update () {
 		
+			Debug.Log (Input.GetAxis("Horizontal") +", "+Input.GetAxis("Vertical"));
+
+
 			// Don't bother doing anything if we're not recording
 			if (currentState != RecordingState.Recording) {
 				return;
@@ -175,14 +178,14 @@ namespace CAVS.Recording {
 
 
 			// If it's time to capture another frame.
-			if(Time.time - timeOfLastFrameCapture > 1f / framesPerSecondForRecording){
+			if(Time.time - timeOfLastFrameCapture >= 1f / framesPerSecondForRecording){
 				captureFrame ();
 			}
 
+
 			if(Input.anyKey){
 				if(Input.inputString != ""){
-					//Debug.Log (Input.inputString +" : "+Time.time);
-					currentRecordingBeingBuilt.logInput (Input.inputString);
+					currentRecordingBeingBuilt.logEvent ("Input", Input.inputString);
 				}
 			}
 

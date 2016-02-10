@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
+using REvent = CAVS.Recording.Event;
 
 namespace CAVS.Recording {
 
@@ -48,9 +49,9 @@ namespace CAVS.Recording {
 
 
 		/// <summary>
-		/// The logged input.
+		/// All events that where logged while we where recording the scene.
 		/// </summary>
-		private List<string> loggedInput;
+		private List<REvent> eventsTranspiredDuringRecording;
 
 
 		/// <summary>
@@ -94,8 +95,9 @@ namespace CAVS.Recording {
 
 			this.frames = new List<Frame> ();
 
-			this.loggedInput = new List<string> ();
+			this.eventsTranspiredDuringRecording = new List<REvent> ();
 		}
+
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="CAVS.Recording.Recording"/> class.
@@ -131,8 +133,8 @@ namespace CAVS.Recording {
 		/// Logs the input along with the time it was given
 		/// </summary>
 		/// <param name="input">Input.</param>
-		public void logInput(string input){
-			loggedInput.Add (input+"\n"+Time.time);
+		public void logEvent(string eventName, string eventContents){
+			eventsTranspiredDuringRecording.Add (new REvent(Time.time, eventName, eventContents));
 		}
 
 
@@ -240,12 +242,12 @@ namespace CAVS.Recording {
 		}
 
 
-		public string[] LoggedInput {
+		public REvent[] EventsTranspiredDuringRecording {
 			get {
-				return loggedInput.ToArray();
+				return eventsTranspiredDuringRecording.ToArray();
 			}
 			set {
-				loggedInput = new List<string>(value);
+				eventsTranspiredDuringRecording = new List<REvent>(value);
 			}
 		}
 

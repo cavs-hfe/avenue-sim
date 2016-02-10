@@ -10,11 +10,11 @@ namespace CAVS {
 
 		private Vector3 posTargetLastFrame = Vector3.zero;
 
-		private Material field;
+		private Material[] field;
 
 		void Start(){
 			
-			field = gameObject.GetComponent<MeshRenderer> ().material;
+			field = gameObject.GetComponent<MeshRenderer> ().materials;
 
 			if (target != null) {
 				posTargetLastFrame = target.transform.position;
@@ -29,13 +29,15 @@ namespace CAVS {
 				return;
 			}
 
-			float distanceFromCenterToEdge = transform.lossyScale.magnitude/2f;
+			float distanceFromCenterToEdge = transform.lossyScale.magnitude/2;
 
 			// Get the current 'velocity' of the player
 			float vel = Vector3.Distance (posTargetLastFrame, target.transform.position)/Time.deltaTime ;
 			vel = 0; // Because this looks weird currentely
 
-			field.SetFloat ("_Strength", (Vector3.Distance(transform.position, target.transform.position)/distanceFromCenterToEdge) + vel );
+			for (int i = 0; i < field.Length; i++) {
+				field[i].SetFloat ("_Strength", Mathf.Sqrt(Mathf.Sqrt(Vector3.Distance(transform.position, target.transform.position)/distanceFromCenterToEdge))*3 + vel );
+			}
 
 			posTargetLastFrame = target.transform.position;
 
