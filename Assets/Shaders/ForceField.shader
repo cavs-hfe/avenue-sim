@@ -23,7 +23,7 @@ SubShader
     }
 
        
-Cull Back
+Cull off
 ZWrite On
 ZTest LEqual
 
