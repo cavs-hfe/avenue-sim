@@ -114,7 +114,7 @@ void surf (Input IN, inout EditorSurfaceOutput o)
     float4 Step0=step(Fresnel0,float4( 1.0, 1.0, 1.0, 1.0 ));
     float4 Clamp0=clamp(Step0,_Inside.xxxx,float4( 1.0, 1.0, 1.0, 1.0 ));
     float4 Pow0=pow(Fresnel0,(_Rim).xxxx);
-    float4 Multiply5=_Time * _Speed.xxxx;
+    float4 Multiply5=sin(_Time*200)/100;
     float4 UV_Pan0=float4((IN.uv_Texture.xyxy).x,(IN.uv_Texture.xyxy).y + Multiply5.x,(IN.uv_Texture.xyxy).z,(IN.uv_Texture.xyxy).w);
     float4 Multiply1=UV_Pan0 * _Tile.xxxx;
     float4 Tex2D0=tex2D(_Texture,Multiply1.xy);
