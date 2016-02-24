@@ -14,7 +14,7 @@ namespace CAVS.Recording {
 		/// as player, car, plane, robot, etc.
 		/// </summary>
 		[SerializeField]
-		private PrimitiveType objToRepresentActorInPlayback = PrimitiveType.Cube;
+		private string objToRepresentActorInPlayback;
 
 
 		/// <summary>
@@ -43,7 +43,7 @@ namespace CAVS.Recording {
 		/// returns the representation we'd like the actor to assume when playing the recording
 		/// </summary>
 		/// <returns>The object to represent actor.</returns>
-		public PrimitiveType getObjToRepresentActor(){
+		public string getObjToRepresentActor(){
 			return objToRepresentActorInPlayback;
 		}
 
@@ -51,7 +51,7 @@ namespace CAVS.Recording {
 		/// <summary>
 		/// Sets the primitive object type to represent the actor during playback
 		/// </summary>
-		public void setObjToRepresentActor(PrimitiveType obj){
+		public void setObjToRepresentActor(string obj){
 			this.objToRepresentActorInPlayback = obj;
 		}
 
