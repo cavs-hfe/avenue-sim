@@ -12,6 +12,7 @@ namespace CAVS.Recording {
 	/// </summary>
 	public class PlaybackServiceBehavior : MonoBehaviour {
 
+
 		/// <summary>
 		/// The different states the playback behavior can be in
 		/// </summary>
@@ -35,15 +36,9 @@ namespace CAVS.Recording {
 
 
 		/// <summary>
-		/// The time in the game that playback of a recording started.
+		/// How many seconds have passed in the playback recording
 		/// </summary>
-		private float timePlaybackStarted = 0;
-
-
-		/// <summary>
-		/// The time the current frame we are on started
-		/// </summary>
-		private float timeFrameStarted = 0;
+		private float timeThroughPlayback = 0;
 
 
 		/// <summary>
@@ -51,12 +46,6 @@ namespace CAVS.Recording {
 		/// that we are currentely animating.
 		/// </summary>
 		private int frameCurrentelyOn = 0;
-
-
-		/// <summary>
-		/// How long we have spent paused during our playback
-		/// </summary>
-		private float timeSpentPaused = 0;
 
 
 		/// <summary>
@@ -90,6 +79,10 @@ namespace CAVS.Recording {
 		/// </summary>
 		/// <returns>All Files found in recordings folder.</returns>
 		public static string[] getAllRecordingsFileNames(){
+
+			if (!Directory.Exists ("Recordings")) {
+				return null;
+			}
 
 			string[] recordings = Directory.GetFiles ("Recordings");
 
@@ -163,7 +156,11 @@ namespace CAVS.Recording {
 		/// <returns>The recording.</returns>
 		/// <param name="recordingPath">Recording path.</param>
 		public static Recording getRecording(string recordingPath){
-			
+
+			if (!Directory.Exists ("Recordings")) {
+				return null;
+			}
+
 			// Load in the new recording
 			XmlSerializer serializer = new XmlSerializer (typeof(Recording));
 
@@ -202,11 +199,11 @@ namespace CAVS.Recording {
 
 			// Reset previous recording variables
 			actors = new Dictionary<int, GameObject> ();
+
 			currentPlaybackState = PlaybackState.Playing;
+
 			frameCurrentelyOn = 0;
-			timePlaybackStarted = Time.time;
-			timeFrameStarted = Time.time;
-			timeSpentPaused = 0f;
+			timeThroughPlayback = 0;
 			velocitys = new Vector3[currentLoadedRecording.ActorIds.Length];
 
 			ActorBehavior[] actorsInScene = null;
@@ -236,7 +233,7 @@ namespace CAVS.Recording {
 							actor = actorsInScene [a].gameObject;
 
 							// Disable anything that might mess up playback
-							PlaybackInterferenceBehavior[] interference = actor.GetComponents<PlaybackInterferenceBehavior>();
+							PlaybackActorBehavior[] interference = actor.GetComponents<PlaybackActorBehavior>();
 
 							for (int p = 0; p < interference.Length; p++) {
 
@@ -254,7 +251,7 @@ namespace CAVS.Recording {
 				if(actor == null){
 
 					if (actorRef == null) {
-						Debug.LogError ("Unable to find the resource you wanted to use to represent the actor!");
+						Debug.LogError ("Unable to find the resource you wanted to use to represent the actor named: "+currentLoadedRecording.getActorName (id)+"! Using a cube instead");
 						actor = GameObject.CreatePrimitive (PrimitiveType.Cube);
 					} else {
 						actor = GameObject.Instantiate (actorRef);
@@ -270,7 +267,7 @@ namespace CAVS.Recording {
 			}
 
 		}
-
+			
 
 		/// <summary>
 		/// Stops the loaded recording, if there is one to be stopped
@@ -289,7 +286,6 @@ namespace CAVS.Recording {
 
 			clearCurrentLoadedRecording ();
 
-
 		}
 
 
@@ -307,51 +303,74 @@ namespace CAVS.Recording {
 				currentPlaybackState = PlaybackState.Paused;
 			}
 
-
 		}
 
 
 		/// <summary>
-		/// The velocitys of the actors for smooth interpolation between frames
+		/// Whether or not the playback service is currentely active.
 		/// </summary>
-		private Vector3[] velocitys;
-
-		void Update(){
+		/// <returns><c>true</c>, if currentely playing was ised, <c>false</c> otherwise.</returns>
+		public bool isCurrentelyPlaying(){
 
 			if (currentPlaybackState == PlaybackState.Playing) {
+				return true;
+			}
 
-				// Determine whether or not it's time to go to the next frame
+			return false;
+		}
 
-				if(frameCurrentelyOn == currentLoadedRecording.Frames.Length -1){
 
-					if(getTimeThroughRecording() >= currentLoadedRecording.getDuration()){
-						frameCurrentelyOn = 0;
-						timeFrameStarted = Time.time;
-						timePlaybackStarted = Time.time;
-						timeSpentPaused = 0;
-					}
+		/// <summary>
+		/// Sets the time we want the playback to be at in the recording.
+		/// Useful for seeking.
+		/// </summary>
+		/// <param name="time">Time.</param>
+		public void setTimeThroughPlayback(float time){
 
-				} else if(getTimeThroughRecording() >= currentLoadedRecording.Frames [frameCurrentelyOn + 1].TimeStamp -currentLoadedRecording.Frames [0].TimeStamp){
-					frameCurrentelyOn++;
-					timeFrameStarted = Time.time;
-				}
+			// Can't set time if we're not playing a recording
+			if(currentPlaybackState == PlaybackState.Stopped){
+				Debug.LogWarning ("Trying to set the time through playback even though there's no recording playing!");
+				return;
+			}
 
-				// Go through each actor and move them to their correct position
-				int i = 0;
-				foreach(KeyValuePair<int, GameObject> actor in actors){
+			// Can't set time if we don't have a recording
+			if(currentLoadedRecording == null){
+				Debug.LogError("Trying to set the time of a null recording@");
+				return;
+			}
 
-					// Lerp through frames so no matter what the frame rate is it'll appear smooth
-					actor.Value.transform.position = Vector3.SmoothDamp (actor.Value.transform.position, currentLoadedRecording.Frames[frameCurrentelyOn].getPositionOfActor(actor.Key), ref velocitys[i], 1f/currentLoadedRecording.FrameRateRecordedAt);
-					actor.Value.transform.rotation = Quaternion.Euler(Vector3.Slerp (actor.Value.transform.rotation.eulerAngles, currentLoadedRecording.Frames[frameCurrentelyOn].getRotationOfActor(actor.Key), .1f));
+			// clamp the time as to not get unexpected behavior
+			timeThroughPlayback = Mathf.Clamp(time, 0, currentLoadedRecording.getDuration());
 
-					i++;
+			// Find the appropriate frame we should be at.
+			for (int i = 0; i < currentLoadedRecording.Frames.Length; i++) {
+
+				// Figure out what frame we're on now
+				if (currentLoadedRecording.Frames[i].TimeStamp - currentLoadedRecording.Frames[0].TimeStamp < time) {
+					frameCurrentelyOn = i;
 				}
 
 			}
 
-			if (currentPlaybackState == PlaybackState.Paused) {
-				timeSpentPaused += Time.deltaTime;
+			// play the events that transpired this frame
+			playAllEventsThatHappenedThisFrame (frameCurrentelyOn);
+
+			// Set the specific position it should be at.
+			updateActorTransforms();
+		}
+
+
+		/// <summary>
+		/// Gets the length of recording, if one is loaded
+		/// </summary>
+		/// <returns>The length of recording.</returns>
+		public float getLengthOfCurrentRecording(){
+
+			if(currentLoadedRecording == null){
+				return 0;
 			}
+
+			return currentLoadedRecording.getDuration ();
 
 		}
 
@@ -360,8 +379,44 @@ namespace CAVS.Recording {
 		/// The time in seconds of how long the recording has been playing.
 		/// </summary>
 		/// <returns>The time through recording.</returns>
-		private float getTimeThroughRecording(){
-			return Time.time - timePlaybackStarted-timeSpentPaused;
+		public float getTimeThroughPlayback(){
+			return timeThroughPlayback;
+		}
+
+
+		/// <summary>
+		/// The velocitys of the actors for smooth interpolation between frames
+		/// </summary>
+		private Vector3[] velocitys;
+
+
+		void Update(){
+
+			if (currentPlaybackState == PlaybackState.Playing) {
+
+				timeThroughPlayback += Time.deltaTime;
+
+				// Determine whether or not it's time to go to the next frame
+
+				if(frameCurrentelyOn == currentLoadedRecording.Frames.Length -1){
+
+					if(getTimeThroughPlayback() >= currentLoadedRecording.getDuration()){
+						frameCurrentelyOn = 0;
+						timeThroughPlayback = 0;
+						playAllEventsThatHappenedThisFrame (frameCurrentelyOn);
+					}
+
+				} else if(getTimeThroughPlayback() >= currentLoadedRecording.Frames [frameCurrentelyOn + 1].TimeStamp - currentLoadedRecording.Frames [0].TimeStamp){
+					frameCurrentelyOn++;
+					playAllEventsThatHappenedThisFrame (frameCurrentelyOn);
+				}
+
+				// Go through each actor and move them to their correct position
+				updateActorTransforms();
+
+			}
+
+
 		}
 
 
@@ -375,7 +430,7 @@ namespace CAVS.Recording {
 
 					if(actorsAlreadyInSceneWhenStartPlaying.Contains(actor.Value)){
 
-						PlaybackInterferenceBehavior[] componentstoReenable = actor.Value.GetComponents<PlaybackInterferenceBehavior> ();
+						PlaybackActorBehavior[] componentstoReenable = actor.Value.GetComponents<PlaybackActorBehavior> ();
 
 						for (int i = 0; i < componentstoReenable.Length; i++) {
 							componentstoReenable [i].enabled = true;
@@ -395,6 +450,76 @@ namespace CAVS.Recording {
 			actors = null;
 
 		}
+
+
+		/// <summary>
+		/// The actual movement of the actors in the playback from one position and
+		/// rotation to another.
+		/// </summary>
+		private void updateActorTransforms(){
+			int i = 0;
+			foreach(KeyValuePair<int, GameObject> actor in actors){
+
+				// Lerp through frames so no matter what the frame rate is it'll appear smooth
+				actor.Value.transform.position = Vector3.SmoothDamp (actor.Value.transform.position, currentLoadedRecording.Frames[frameCurrentelyOn].getPositionOfActor(actor.Key), ref velocitys[i], 1f/currentLoadedRecording.FrameRateRecordedAt);
+				actor.Value.transform.rotation = Quaternion.Euler(Vector3.Slerp (actor.Value.transform.rotation.eulerAngles, currentLoadedRecording.Frames[frameCurrentelyOn].getRotationOfActor(actor.Key), .1f));
+
+				i++;
+			}
+		}
+
+
+		/// <summary>
+		/// Gets all events that occured during the frame of the recording
+		/// that's currentely loaded.
+		/// </summary>
+		/// <returns>The all events that occured this frame.</returns>
+		/// <param name="frame">Frame.</param>
+		private CAVS.Recording.Event[] getAllEventsThatOccuredThisFrame(int frame){
+
+			if (frame < 0 || currentLoadedRecording == null || frame >= currentLoadedRecording.Frames.Length -1) {
+				return new CAVS.Recording.Event[0];
+			}
+
+			List<CAVS.Recording.Event> foundEvents = new List<CAVS.Recording.Event> ();
+
+			float frameStartTime = currentLoadedRecording.Frames[frame].TimeStamp;
+			float frameEndTime = currentLoadedRecording.Frames[frame+1].TimeStamp;
+
+			for (int i = 0; i < currentLoadedRecording.EventsTranspiredDuringRecording.Length; i++) {
+
+				float timeOfEvent = currentLoadedRecording.EventsTranspiredDuringRecording [i].Time;
+
+				if(timeOfEvent >= frameStartTime && timeOfEvent < frameEndTime){
+					foundEvents.Add (currentLoadedRecording.EventsTranspiredDuringRecording [i]);
+				}
+
+			}
+
+			return foundEvents.ToArray ();
+		}
+
+
+		private void playAllEventsThatHappenedThisFrame(int frame){
+			
+			CAVS.Recording.Event[] events = getAllEventsThatOccuredThisFrame (frame);
+
+			for (int e = 0; e < events.Length; e++) {
+
+				foreach (KeyValuePair<int, GameObject> actor in actors) {
+
+					PlaybackActorBehavior[] componentstoReenable = actor.Value.GetComponents<PlaybackActorBehavior> ();
+
+					for (int i = 0; i < componentstoReenable.Length; i++) {
+						componentstoReenable [i].handleEvent(events[e].Name, events[e].Contents);
+					}
+
+				}
+
+			}
+
+		}
+
 
 	}
 

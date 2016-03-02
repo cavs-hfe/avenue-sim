@@ -83,6 +83,11 @@ namespace CAVS.Recording {
 				return;
 			}
 
+			// Can't start a new recording while currentely recording
+			if (currentState == RecordingState.Recording || currentState == RecordingState.Paused) {
+				Debug.LogError ("Can't record");
+			}
+
 			// Change state to recording
 			currentState = RecordingState.Recording;
 
@@ -108,17 +113,20 @@ namespace CAVS.Recording {
 			}
 
 			// Create our recording object that we'll add frame data to.
-			currentRecordingBeingBuilt = new Recording (nameOfRecording, framesPerSecondForRecording, actorIdsBeingRecorded, actorNames, actorplaybackRep);
+			currentRecordingBeingBuilt = new Recording (nameOfRecording, getFPS(), actorIdsBeingRecorded, actorNames, actorplaybackRep);
 
 			// Capture our first frame
 			captureFrame ();
-
 		}
 
 
+		/// <summary>
+		/// Stops the recording and saves it with the file name originally specified.
+		/// </summary>
 		public void stopAndSaveRecording(){
 
 			if (currentState != RecordingState.Paused && currentState != RecordingState.Recording) {
+				Debug.LogError ("Can't stop a recording because we're not currentely making one!");
 				return;
 			}
 
@@ -128,20 +136,49 @@ namespace CAVS.Recording {
 		}
 
 
-		public void saveRecording(){
+		/// <summary>
+		/// Stops the and trashes the current recording being made.
+		/// </summary>
+		public void stopAndTrashRecording(){
 			
-			string path = "Recordings/" + currentRecordingBeingBuilt.Name+".xml";
-
-			using(FileStream outputFile = File.Create(path)){
-				
-				XmlSerializer formatter = new XmlSerializer (typeof(Recording));
-				formatter.Serialize (outputFile, currentRecordingBeingBuilt);
-
+			if (currentState != RecordingState.Paused && currentState != RecordingState.Recording) {
+				Debug.LogError ("Can't stop a recording because we're not currentely making one!");
+				return;
 			}
+
+			currentState = RecordingState.Stopped;
+			currentRecordingBeingBuilt = null;
 
 		}
 
 
+		/// <summary>
+		/// The FPS that the recording service takes snapshots of the state of
+		/// the actors in the scene while recording.
+		/// </summary>
+		/// <returns>The FPS.</returns>
+		public float getFPS(){
+			return Mathf.Clamp (this.framesPerSecondForRecording, 1, 1000); 
+		}
+
+
+		/// <summary>
+		/// Sets the FPS to record by if the service is not already recording
+		/// </summary>
+		/// <param name="fps">Fps.</param>
+		public void setFPSToRecordBy(int fps){
+			if (currentelyRecording ()) {
+				Debug.LogWarning ("Can't change the fps to record by while recording! Ignoring!");
+				return;
+			}
+			this.framesPerSecondForRecording = Mathf.Clamp (fps, 1, 1000); 
+		}
+
+
+		/// <summary>
+		/// Whether or not we're currentely recording the scene.
+		/// </summary>
+		/// <returns><c>true</c>, if recording is currentely occuring, <c>false</c> otherwise.</returns>
 		public bool currentelyRecording(){
 			
 			if (currentState == RecordingState.Recording) {
@@ -149,6 +186,23 @@ namespace CAVS.Recording {
 			}
 
 			return false;
+
+		}
+
+
+		/// <summary>
+		/// Logs an event to recording
+		/// </summary>
+		/// <param name="name">Name.</param>
+		/// <param name="contents">Contents.</param>
+		public void logEventToRecording(string name, string contents){
+
+			if (!currentelyRecording ()) {
+				Debug.LogError ("You can log an event when theres no recording going on!");
+				return;
+			}
+
+			currentRecordingBeingBuilt.logEvent (name, contents);
 
 		}
 
@@ -168,6 +222,7 @@ namespace CAVS.Recording {
 		// Update is called once per frame
 		void Update () {
 		
+
 			// Don't bother doing anything if we're not recording
 			if (currentState != RecordingState.Recording) {
 				return;
@@ -175,21 +230,23 @@ namespace CAVS.Recording {
 
 
 			// If it's time to capture another frame.
-			if(Time.time - timeOfLastFrameCapture > 1f / framesPerSecondForRecording){
+			if(Time.time - timeOfLastFrameCapture >= 1f / getFPS()){
 				captureFrame ();
 			}
 
-			if(Input.anyKey){
-				if(Input.inputString != ""){
-					//Debug.Log (Input.inputString +" : "+Time.time);
-					currentRecordingBeingBuilt.logInput (Input.inputString);
-				}
-			}
+
+//			if(Input.anyKey){
+//				if(Input.inputString != ""){
+//					currentRecordingBeingBuilt.logEvent ("Input", Input.inputString);
+//				}
+//			}
 
 		}
 
 
 		/// <summary>
+		/// *Called by the Unity Engine*
+		/// 
 		/// Raises the disable event.
 		/// Called when the object is disabled, such as when you exit play mode.
 		/// Used for saving all frame data if we where recording at the time
@@ -244,6 +301,29 @@ namespace CAVS.Recording {
 
 			// Create our frame
 			currentRecordingBeingBuilt.addFrame(new Frame(ids, postions, rotations, Time.time));
+
+		}
+
+
+		private void saveRecording(){
+
+			if (currentRecordingBeingBuilt == null) {
+				Debug.Log ("Trying to save a recording that doesn't exist!");
+				return;
+			}
+
+			if(!Directory.Exists("Recordings")){
+				Directory.CreateDirectory ("Recordings");
+			}
+
+			string path = "Recordings/" + currentRecordingBeingBuilt.Name+".xml";
+
+			using(FileStream outputFile = File.Create(path)){
+
+				XmlSerializer formatter = new XmlSerializer (typeof(Recording));
+				formatter.Serialize (outputFile, currentRecordingBeingBuilt);
+
+			}
 
 		}
 

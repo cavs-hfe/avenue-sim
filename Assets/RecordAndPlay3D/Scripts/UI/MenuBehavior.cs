@@ -67,19 +67,21 @@ namespace CAVS.Recording.UI {
 
 					string[] allCurrentFileNames = PlaybackServiceBehavior.getAllRecordingsFileNames ();
 
-					for (int i = 0; i < allCurrentFileNames.Length; i++) {
+					if (allCurrentFileNames != null){
+							for (int i = 0; i < allCurrentFileNames.Length; i++) {
 
-						// Remove .xml extensions
-						allCurrentFileNames [i] = allCurrentFileNames [i].Substring (0, allCurrentFileNames [i].Length - 4);
+								// Remove .xml extensions
+								allCurrentFileNames [i] = allCurrentFileNames [i].Substring (0, allCurrentFileNames [i].Length - 4);
 
-						// Remove numbers at end of file
-						allCurrentFileNames [i] = rgx.Replace (allCurrentFileNames [i], replacement);
+								// Remove numbers at end of file
+								allCurrentFileNames [i] = rgx.Replace (allCurrentFileNames [i], replacement);
 
-						// If file names match
-						if (allCurrentFileNames [i].Equals (fileName)) {
-							numOfFilesWithSameName++;
-						}
+								// If file names match
+								if (allCurrentFileNames [i].Equals (fileName)) {
+									numOfFilesWithSameName++;
+								}
 
+							}
 					}
 
 					fileName += numOfFilesWithSameName;
@@ -90,23 +92,27 @@ namespace CAVS.Recording.UI {
 
 					string[] allCurrentFileNames = PlaybackServiceBehavior.getAllRecordingsFileNames ();
 
-					for (int i = 0; i < allCurrentFileNames.Length; i++) {
 
-						// Remove .xml extensions
-						allCurrentFileNames [i] = allCurrentFileNames [i].Substring (0, allCurrentFileNames [i].Length - 4);
+					if (allCurrentFileNames != null) {
 
-						// If file names match
-						if (allCurrentFileNames [i].Equals (fileName)) {
+						for (int i = 0; i < allCurrentFileNames.Length; i++) {
 
-							// Show an error on the screen preventing an overwrite
-							GameObject errorInstance = Instantiate(errorPanel);
-							errorInstance.transform.SetParent(playbackPanel.transform.parent,false);
-							Destroy(errorInstance,3f);
+							// Remove .xml extensions
+							allCurrentFileNames [i] = allCurrentFileNames [i].Substring (0, allCurrentFileNames [i].Length - 4);
 
-							return;
+							// If file names match
+							if (allCurrentFileNames [i].Equals (fileName)) {
+
+								// Show an error on the screen preventing an overwrite
+								GameObject errorInstance = Instantiate (errorPanel);
+								errorInstance.transform.SetParent (playbackPanel.transform.parent, false);
+								Destroy (errorInstance, 3f);
+
+								return;
+
+							}
 
 						}
-
 					}
 
 				}
@@ -146,12 +152,17 @@ namespace CAVS.Recording.UI {
 
 				}
 
+				string[] allFiles = PlaybackServiceBehavior.getAllRecordingsFileNames ();
+
+				if (allFiles == null) {
+					return;
+				}
 
 				// Create a button for every file
-				for(int i = 0; i < PlaybackServiceBehavior.getAllRecordingsFileNames().Length; i ++){
+				for(int i = 0; i < allFiles.Length; i ++){
 
 					GameObject file = (GameObject)Instantiate (playbackFileButtonPrefab);
-					string fileName = PlaybackServiceBehavior.getAllRecordingsFileNames () [i];
+					string fileName = allFiles [i];
 					file.transform.SetParent (playbackFileList.transform);
 					file.GetComponentInChildren<Text> ().text = fileName;
 					file.GetComponent<Button> ().onClick.AddListener (() => this.loadFile(fileName));
@@ -167,9 +178,13 @@ namespace CAVS.Recording.UI {
 			
 			if (playbackService.setRecordingToPlayback (buttonPressed)) {
 				playbackControlsPanel.SetActive (true);
+				clearValuesInControlPlaybackPanel ();
 			}
 
 		}
+
+
+
 
 
 		public void playLoadedRecording(){
@@ -183,6 +198,46 @@ namespace CAVS.Recording.UI {
 
 		public void stopLoadedRecording(){
 			playbackService.stopLoadedRecording ();
+			clearValuesInControlPlaybackPanel ();
+		}
+
+		bool setThisFrame = false;
+
+		public void setCurrentTimeThroughPlayback(float val){
+
+			if (setThisFrame == false) {
+				setThisFrame = true;
+				return;
+			}
+
+			if (val > 1 || val < 0) {
+				Debug.LogError ("Setting a value that's not clamped between 0 and 1!");
+				return;
+			}
+
+			if (playbackService != null) {
+
+				playbackControlsPanel.transform.Find ("Time Text").GetComponent<Text>().text = playbackService.getTimeThroughPlayback().ToString("0.0");
+				playbackService.setTimeThroughPlayback (playbackService.getLengthOfCurrentRecording()*val);
+
+			}
+
+		}
+
+		void Update(){
+
+			if (playbackService.isCurrentelyPlaying ()) {
+				playbackControlsPanel.transform.Find ("Time Text").GetComponent<Text>().text = playbackService.getTimeThroughPlayback().ToString("0.0");
+				playbackControlsPanel.transform.Find ("Seek Slider").GetComponent<Slider>().value = playbackService.getTimeThroughPlayback()/playbackService.getLengthOfCurrentRecording();
+				setThisFrame = false;
+			}
+
+
+		}
+
+		private void clearValuesInControlPlaybackPanel(){
+			playbackControlsPanel.transform.Find ("Time Text").GetComponent<Text>().text = "0.0";
+			playbackControlsPanel.transform.Find ("Seek Slider").GetComponent<Slider>().value = 0;
 		}
 
 	}

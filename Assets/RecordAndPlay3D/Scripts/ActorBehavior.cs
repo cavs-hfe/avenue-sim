@@ -3,6 +3,10 @@ using System.Collections;
 
 namespace CAVS.Recording {
 
+	/// <summary>
+	/// When you are wanting to record your scene, you want to attatch this object to any Gameobject 
+	/// that you want to record.
+	/// </summary>
 	public class ActorBehavior : MonoBehaviour {
 
 		/// <summary>
@@ -36,6 +40,15 @@ namespace CAVS.Recording {
 
 			return nameForRecording;
 
+		}
+
+
+		/// <summary>
+		/// Sets the name for recording.
+		/// </summary>
+		/// <param name="name">Name.</param>
+		public void setNameForRecording(string name){
+			this.nameForRecording = name;
 		}
 
 
