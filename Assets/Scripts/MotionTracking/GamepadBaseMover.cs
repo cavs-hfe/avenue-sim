@@ -7,8 +7,6 @@ public class GamepadBaseMover : MonoBehaviour {
 	public Camera referenceCamera;
 	public bool useMouse = true;
 
-	private float rotation = 1.0f;
-
 	// Use this for initialization
 	void Start () {
 

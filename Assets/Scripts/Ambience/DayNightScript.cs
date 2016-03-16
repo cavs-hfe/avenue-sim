@@ -9,7 +9,6 @@ public class DayNightScript : MonoBehaviour
     [Range(0, 1)]
     public float currentTimeOfDay = 0;
     public float timeMultiplier = 1f;
-    public bool timeEnabled = true;
 
     float sunInitialIntensity;
 
@@ -24,15 +23,13 @@ public class DayNightScript : MonoBehaviour
     {
         UpdateSun();
 
-        if (timeEnabled)
-        {
-            currentTimeOfDay += (Time.deltaTime / secondsInFullDay) * timeMultiplier;
+        currentTimeOfDay += (Time.deltaTime / secondsInFullDay) * timeMultiplier;
 
-            if (currentTimeOfDay >= 1)
-            {
-                currentTimeOfDay = 0;
-            }
+        if (currentTimeOfDay >= 1)
+        {
+            currentTimeOfDay = 0;
         }
+
     }
 
     void UpdateSun()

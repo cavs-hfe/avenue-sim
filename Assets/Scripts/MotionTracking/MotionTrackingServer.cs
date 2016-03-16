@@ -48,10 +48,11 @@ public class MotionTrackingServer : MonoBehaviour
     public AudioClip startSound;
 
     private GameObject kinect;
-    private GameObject kinectFOV;
-    private GameObject mocapFOV;
+    //private GameObject kinectFOV;
+    //private GameObject mocapFOV;
+    private FOVScript fovScript;
     private bool enableKinect = false;
-    private bool enableMocap = false;
+    //private bool enableMocap = false;
 
     public bool usingMocap = true;
 
@@ -68,8 +69,10 @@ public class MotionTrackingServer : MonoBehaviour
         headPosition = head.transform.position;
 
         kinect = this.transform.FindChild("Kinect").gameObject;
-        kinectFOV = this.transform.FindChild("KinectFOV").gameObject;
-        mocapFOV = this.transform.FindChild("MocapFOV").gameObject;
+        //kinectFOV = this.transform.FindChild("KinectFOV").gameObject;
+        //mocapFOV = this.transform.FindChild("MocapFOV").gameObject;
+        fovScript = this.GetComponent<FOVScript>();
+
 
         audioSource = this.gameObject.AddComponent<AudioSource>();
         audioSource.spatialBlend = 0.0f; // Use 2D sound for sound effects
@@ -95,6 +98,8 @@ public class MotionTrackingServer : MonoBehaviour
 
         if (usingMocap)
         {
+            //kinect.SetActive(false);
+
             System.Diagnostics.ProcessStartInfo startInfo = new System.Diagnostics.ProcessStartInfo();
             startInfo.Arguments = mocapIpAddress;
             startInfo.WindowStyle = System.Diagnostics.ProcessWindowStyle.Minimized;
@@ -133,8 +138,10 @@ public class MotionTrackingServer : MonoBehaviour
         if (message.Equals("mocaps"))
         {
 
-            enableMocap = true;
+            //enableMocap = true;
             enableKinect = false;
+
+            fovScript.enableRectFov();
 
             using (StreamReader reader = new StreamReader(netStream))
             {
@@ -159,7 +166,9 @@ public class MotionTrackingServer : MonoBehaviour
         {
 
             enableKinect = true;
-            enableMocap = false;
+            //enableMocap = false;
+
+            fovScript.enableKinectFov();
 
             while (true)
             {
@@ -194,16 +203,15 @@ public class MotionTrackingServer : MonoBehaviour
         leftFoot.transform.localPosition = footLeftPos;
         rightFoot.transform.localPosition = footRightPos;*/
 
-        if (kinectFOV.activeSelf != enableKinect)
+        if (kinect.activeSelf != enableKinect)
         {
             kinect.SetActive(enableKinect);
-            kinectFOV.SetActive(enableKinect);
         }
 
-        if (mocapFOV.activeSelf != enableMocap)
+        /*if (mocapFOV.activeSelf != enableMocap)
         {
             mocapFOV.SetActive(enableMocap);
-        }
+        }*/
 
         if (Input.GetKeyDown(KeyCode.JoystickButton0) || Input.GetKeyDown(KeyCode.Space))
         {
