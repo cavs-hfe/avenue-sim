@@ -1,4 +1,4 @@
-Simplygon Unity Plugin 2.4.0
+Simplygon Unity Plugin 2.5.0
 This is a short version of the user guide. For more extensive information please go to www.simplygon.com/unity. 
 
 
@@ -8,7 +8,7 @@ If you have been using a previous version of the Simplygon plug-in in Unity 5, t
 If you want all shaders to use their respective default channels and nodes, close Unity and delete the files SimplygonShadingNetworkSetup.json and SimplygonShadingNetworkSetup.json.meta located in the project's Assets/Editor folder. Once Unity is restarted and the project reopened the default shading networks will be in use and the SimplygonShadingNetworkSetup.json file will be recreated if any shader's shading network is edited and saved.
 
 
-HOW TO INSTALL IT
+HOW TO INSTALL SIMPLYGON
 1. Start Unity.
 2. Go to asset store and install the Simplygon Plugin.
 3. In Unity, click Window -> Simplygon.
