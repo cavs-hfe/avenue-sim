@@ -1,2 +1,2 @@
-# Pedestrian Simulator
-This project involves deloping a pedestrian simulator. The project uses a Microsoft Kinect for skeleton tracking and head position and an Oculus Rift for head orientation and display. Both elements are combined in a Unity scene that contains the environment for the simulation.
+# AVENUE Simulator
+This project contains the core features and functionality of the Ambulatory Virtual Environment for Natural User Experiences, or AVENUE. The project uses a Microsoft Kinect or mocap for skeleton tracking and head position and an Oculus Rift for head orientation and display. Both elements are combined in a Unity scene that contains the environment for the simulation. The simulator also supports the use of an HTC Vive for position and display.
